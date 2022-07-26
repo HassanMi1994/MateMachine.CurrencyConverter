@@ -20,6 +20,7 @@ namespace MateMachine.CurrencyConverter.Logic
 
         public double Convert(string fromCurrency, string toCurrency, double amount)
         {
+            Console.WriteLine($"{amount} {fromCurrency} -> {toCurrency} ");
             return _exchangeManager.Convert(fromCurrency, toCurrency, amount);
         }
 
