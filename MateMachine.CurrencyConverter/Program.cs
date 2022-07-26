@@ -7,6 +7,8 @@ List<Tuple<string, string, double>> rates = new List<Tuple<string, string, doubl
               Tuple.Create("USD","CAD",1.34),
               Tuple.Create("CAD","GBP",0.58),
               Tuple.Create("USD","EUR",0.86),
+              Tuple.Create("GBP","RIAL",380000.0),
+              Tuple.Create("CAD","RIAL",24000.0)
              };
 
 CurrencyConverter converter = new CurrencyConverter(rates);
@@ -19,5 +21,8 @@ Console.WriteLine("________________________");
 Console.WriteLine(converter.Convert("CAD", "USD", 10.0));
 Console.WriteLine("________________________");
 Console.WriteLine(converter.Convert("USD", "GBP", 10.0));
+
+Console.WriteLine("________________________");
+Console.WriteLine(converter.Convert("RIAL", "USD", 10000.0));
 
 Console.Read();

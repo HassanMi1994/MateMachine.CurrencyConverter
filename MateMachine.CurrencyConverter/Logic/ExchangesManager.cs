@@ -17,7 +17,7 @@
             if (currency == null)
                 throw new Exception($"The From currency is not valid. {from}");
 
-            var target = currency.CurrenciesInSteps.FirstOrDefault(x => x.currency == to);
+            var target = currency.CurrenciesInSteps.OrderBy(x => x.totalStep).FirstOrDefault(x => x.currency == to);
             if (target.totalStep == default(int))
                 throw new Exception($"The From currency is not valid. {to}");
 
@@ -58,9 +58,11 @@
         {
             foreach (var item in userList.Where(x => x.Item1 == currency && x.Item2 != exchange.Currency))
             {
-                if (exchange.CurrenciesInSteps.Count(x => x.currency == item.Item2) == 0)
+                bool isThereAnyBetterPerformance, isOldRecordAvailable;
+                UpdateConfig(exchange, previousStep, item.Item2, out isThereAnyBetterPerformance, out isOldRecordAvailable);
+
+                if (!isOldRecordAvailable || (isOldRecordAvailable && !isThereAnyBetterPerformance))
                 {
-                    var operatoin = previousStep?.GetFirstStepOperatoin() ?? ExchageRateOperation.Multiply;
                     var step = new Step(previousStep, item.Item1, item.Item2, item.Item3, ExchageRateOperation.Multiply, item.Item3);
                     exchange.CurrenciesInSteps.Add((item.Item2, step.ToString(), step.StepNumber, step.GetAllSteps()));
                     step.NextSteps = GetAllNodeFor(item.Item2, exchange, step);
@@ -69,14 +71,26 @@
             }
         }
 
+        private static void UpdateConfig(Exchange exchange, Step previousStep, string symbol, out bool isThereAnyBetterPerformance, out bool isOldRecordAvailable)
+        {
+            var isThereAny = exchange.CurrenciesInSteps.OrderByDescending(x => x.totalStep).FirstOrDefault(x => x.currency == symbol);
+            isThereAnyBetterPerformance = false;
+            isOldRecordAvailable = isThereAny.totalStep != default(int);
+            if (isOldRecordAvailable)
+            {
+                isThereAnyBetterPerformance = isThereAny.totalStep <= previousStep?.StepNumber;
+            }
+        }
+
         private void FindRouteFromRightHand(string currency, Exchange exchange, Step previousStep, List<Step> steps)
         {
             foreach (var item in userList.Where(x => x.Item2 == currency && x.Item1 != exchange.Currency))
             {
-                if (exchange.CurrenciesInSteps.Count(x => x.currency == item.Item1) == 0)
-                {
-                    var operatoin = previousStep?.GetFirstStepOperatoin() ?? ExchageRateOperation.Divide;
+                bool isThereAnyBetterPerformance, isOldRecordAvailable;
+                UpdateConfig(exchange, previousStep, item.Item1, out isThereAnyBetterPerformance, out isOldRecordAvailable);
 
+                if (!isOldRecordAvailable || (isOldRecordAvailable && !isThereAnyBetterPerformance))
+                {
                     var step = new Step(previousStep, item.Item2, item.Item1, item.Item3, ExchageRateOperation.Divide, item.Item3);
                     exchange.CurrenciesInSteps.Add((item.Item1, step.ToString(), step.StepNumber, step.GetAllSteps()));
                     step.NextSteps = GetAllNodeFor(item.Item1, exchange, step);
