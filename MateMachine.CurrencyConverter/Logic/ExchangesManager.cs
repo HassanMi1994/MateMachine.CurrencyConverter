@@ -39,22 +39,22 @@
             foreach (var item in uniqueCurrencies)
             {
                 Exchange exchange = new Exchange(item);
-                exchange.Steps = GetAllNodeFor(item, exchange, 1);
+                exchange.Steps = GetAllNodeFor(item, exchange);
                 Exchanges.Add(exchange);
             }
         }
 
-        private List<Step> GetAllNodeFor(string currency, Exchange exchange, double previousStepRate, Step previousStep = null)
+        private List<Step> GetAllNodeFor(string currency, Exchange exchange, Step previousStep = null)
         {
             List<Step> steps = new List<Step>();
 
-            FindRouteFromLeftHand(currency, exchange, previousStepRate, previousStep, steps);
-            FindRouteFromRightHand(currency, exchange, previousStepRate, previousStep, steps);
+            FindRouteFromLeftHand(currency, exchange, previousStep, steps);
+            FindRouteFromRightHand(currency, exchange, previousStep, steps);
 
             return steps;
         }
 
-        private void FindRouteFromLeftHand(string currency, Exchange exchange, double previousStepRate, Step previousStep, List<Step> steps)
+        private void FindRouteFromLeftHand(string currency, Exchange exchange, Step previousStep, List<Step> steps)
         {
             foreach (var item in userList.Where(x => x.Item1 == currency && x.Item2 != exchange.Currency))
             {
@@ -63,13 +63,13 @@
                     var operatoin = previousStep?.GetFirstStepOperatoin() ?? ExchageRateOperation.Multiply;
                     var step = new Step(previousStep, item.Item1, item.Item2, item.Item3, ExchageRateOperation.Multiply, item.Item3);
                     exchange.CurrenciesInSteps.Add((item.Item2, step.ToString(), step.StepNumber, step.GetAllSteps()));
-                    step.NextSteps = GetAllNodeFor(item.Item2, exchange, item.Item3 * previousStepRate, step);
+                    step.NextSteps = GetAllNodeFor(item.Item2, exchange, step);
                     steps.Add(step);
                 }
             }
         }
 
-        private void FindRouteFromRightHand(string currency, Exchange exchange, double previousStepRate, Step previousStep, List<Step> steps)
+        private void FindRouteFromRightHand(string currency, Exchange exchange, Step previousStep, List<Step> steps)
         {
             foreach (var item in userList.Where(x => x.Item2 == currency && x.Item1 != exchange.Currency))
             {
@@ -79,7 +79,7 @@
 
                     var step = new Step(previousStep, item.Item2, item.Item1, item.Item3, ExchageRateOperation.Divide, item.Item3);
                     exchange.CurrenciesInSteps.Add((item.Item1, step.ToString(), step.StepNumber, step.GetAllSteps()));
-                    step.NextSteps = GetAllNodeFor(item.Item1, exchange, item.Item3 / previousStepRate, step);
+                    step.NextSteps = GetAllNodeFor(item.Item1, exchange, step);
                     steps.Add(step);
                 }
             }
