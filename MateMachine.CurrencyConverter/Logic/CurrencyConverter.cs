@@ -35,7 +35,7 @@ namespace MateMachine.CurrencyConverter.Logic
                 else
                     _userConversionRates.Add(Tuple.Create(item.Item1, item.Item2, item.Item3));
             }
-            _exchangeManager.CalculatePossibleExchagneRates();
+            _exchangeManager.CalculatePossibleExchagneRates(_userConversionRates);
         }
     }
 }

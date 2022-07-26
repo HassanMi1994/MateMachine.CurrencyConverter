@@ -26,8 +26,9 @@
             return currency.CalculateBasedOnSteps(amount, target.stepToCalculate);
         }
 
-        public void CalculatePossibleExchagneRates()
+        public void CalculatePossibleExchagneRates(IEnumerable<Tuple<string, string, double>> userList)
         {
+            this.userList = userList;
             HashSet<string> uniqueCurrencies = new();
             foreach (var item in userList)
             {
